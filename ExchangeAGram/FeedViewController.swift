@@ -7,7 +7,8 @@
 //
 
 import UIKit
-
+import MobileCoreServices
+import CoreData
 
 /*
 * Step 1 - This class was created after deleting the original ViewController class.
@@ -17,9 +18,10 @@ import UIKit
 * Step 3.1 - Then ctrl drag from CollectionView in the Main.storyboard to Feed View Controller twice
 * to let CollectionView know that the F V C is going to be both delegate and data source
 * 
-*
+* Step 7.1 - Now we are confirming to more delegates so that we can assign FVC instance as a delegate
+* to UIImagePickerController
 */
-class FeedViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
+class FeedViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     // Step 2 - This is the first thing we did after setting up the story board
     // with a UICollectionView, and a NavigationController
@@ -27,15 +29,52 @@ class FeedViewController: UIViewController, UICollectionViewDataSource, UICollec
     
     @IBOutlet weak var collectionView: UICollectionView!
     
+    // Step 12 -  manually construct an NSFetchRequest, which will "describe search criteria used to retrieve data from persistent store." By doing this, we will get a good look at the inner workings of the class. see 12.1 below
+    var feedArray: [AnyObject] = [] // FeeItem array
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // Step 12.1 - get appdelegate, create nsfetchrequest and assign to feedarray
+        let request = NSFetchRequest(entityName: "FeedItem")
+        let appDelegate:AppDelegate = (UIApplication.sharedApplication().delegate as AppDelegate)
+        let context:NSManagedObjectContext = appDelegate.managedObjectContext!
+        feedArray = context.executeFetchRequest(request, error: nil)!
 
-        // Do any additional setup after loading the view.
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    
+    // UIImageViewPickerControllerDelegate
+    // Step 9 - Now, we are going to implement one of the UIImagePickerController delegate functions which will determine which photo we are selecting from the camera or photo library.
+    func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [NSObject : AnyObject]) {
+        let image = info[UIImagePickerControllerOriginalImage] as UIImage
+        
+        // Step 11 - get jpeg representation, then create feed item instance
+        // then save context
+        let imageData = UIImageJPEGRepresentation(image, 1.0)
+        
+        let managedObjectContext = (UIApplication.sharedApplication().delegate as AppDelegate).managedObjectContext
+        let entityDescription = NSEntityDescription.entityForName("FeedItem", inManagedObjectContext: managedObjectContext!)
+        let feedItem = FeedItem(entity: entityDescription!, insertIntoManagedObjectContext: managedObjectContext!)
+        feedItem.image = imageData
+        feedItem.caption = "Test Caption"
+        
+        (UIApplication.sharedApplication().delegate as AppDelegate).saveContext()
+        
+        // added this in step 13.2
+        feedArray.append(feedItem)
+        
+        // added this line in step 9
+        self.dismissViewControllerAnimated(true, completion: nil)
+        
+        // added this in step 13.3
+        self.collectionView.reloadData()
+
     }
     
     
@@ -47,22 +86,59 @@ class FeedViewController: UIViewController, UICollectionViewDataSource, UICollec
     
     // Step 4.1 - continued
     func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 1
+        // Step 13 - change from 1 to proper feedArray count
+        return feedArray.count
     }
     
     // Step 4.2 - continued
     func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
-        return UICollectionViewCell()
+        // Step 13.1 
+        var cell:FeedCell = collectionView.dequeueReusableCellWithReuseIdentifier("Cell", forIndexPath: indexPath) as FeedCell
+        let thisItem = feedArray[indexPath.row] as FeedItem
+        
+        cell.imageView.image = UIImage(data: thisItem.image)
+        cell.captionLabel.text = thisItem.caption
+        
+        return cell
     }
 
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
+    
+    
+    // Step 6 - linked the camera button item to this action below
+    // Step 6.1 - then go to the Proj settings and add MobileCoreServices.framework, then import it at the top of the class
+    //
+    @IBAction func snapBarButtonItemTapped(sender: UIBarButtonItem) {
+        // Step 7 - add the code below to create and use instance of UIImagePickerController
+        // which is sub class of Navigation controller which means that we have to confirm to 
+        // NavigationControllerDelegate
+        if (UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.Camera)) {
+            var cameraController = UIImagePickerController()
+            cameraController.delegate = self // added this as self since FVC confirms to required delegates now
+            cameraController.sourceType = UIImagePickerControllerSourceType.Camera
+            // Step 7.2 now specify that the media type your cam controller is going to support is Images
+            let mediaTypes: [AnyObject] = [kUTTypeImage]
+            cameraController.mediaTypes = mediaTypes // these 2 lines are pretty much copy  and paste to specify image media types
+            cameraController.allowsEditing = false // we don't want user to edit the images
+            self.presentViewController(cameraController, animated: true, completion: nil)
+        }
+        // Step 8 - if no camera is available select image from Photo Library
+        else if (UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.PhotoLibrary)) {
+            var photoLibraryController = UIImagePickerController()
+            photoLibraryController.delegate = self
+            photoLibraryController.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
+            let mediaTypes: [AnyObject] = [kUTTypeImage]
+            photoLibraryController.mediaTypes = mediaTypes
+            photoLibraryController.allowsEditing = false
+            self.presentViewController(photoLibraryController, animated: true, completion: nil)
+        }
+        // Step 8.1 - otherwise just show an error message
+        else {
+            var alertController = UIAlertController(title: "Alert", message: "Your device does not support the camera or photo library", preferredStyle: UIAlertControllerStyle.Alert)
+            alertController.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.Default, handler: nil))
+            self.presentViewController(alertController, animated: true, completion: nil)
+        }
     }
-    */
+    
+    
 
 }

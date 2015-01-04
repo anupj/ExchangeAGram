@@ -15,6 +15,8 @@
 		769856BE1A59721F0084F079 /* ExchangeAGramTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 769856BD1A59721F0084F079 /* ExchangeAGramTests.swift */; };
 		769856C81A5976800084F079 /* FeedViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 769856C71A5976800084F079 /* FeedViewController.swift */; };
 		769856CA1A597B710084F079 /* FeedCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 769856C91A597B710084F079 /* FeedCell.swift */; };
+		769856CC1A597FD30084F079 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 769856CB1A597FD30084F079 /* MobileCoreServices.framework */; };
+		769856CE1A598CD30084F079 /* FeedItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 769856CD1A598CD30084F079 /* FeedItem.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,6 +42,8 @@
 		769856BD1A59721F0084F079 /* ExchangeAGramTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeAGramTests.swift; sourceTree = "<group>"; };
 		769856C71A5976800084F079 /* FeedViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FeedViewController.swift; sourceTree = "<group>"; };
 		769856C91A597B710084F079 /* FeedCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FeedCell.swift; sourceTree = "<group>"; };
+		769856CB1A597FD30084F079 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
+		769856CD1A598CD30084F079 /* FeedItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FeedItem.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,6 +51,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				769856CC1A597FD30084F079 /* MobileCoreServices.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -88,6 +93,7 @@
 				769856AE1A59721F0084F079 /* Images.xcassets */,
 				769856B01A59721F0084F079 /* LaunchScreen.xib */,
 				769856A61A59721F0084F079 /* ExchangeAGram.xcdatamodeld */,
+				769856CD1A598CD30084F079 /* FeedItem.swift */,
 				769856A21A59721F0084F079 /* Supporting Files */,
 			);
 			path = ExchangeAGram;
@@ -96,6 +102,7 @@
 		769856A21A59721F0084F079 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				769856CB1A597FD30084F079 /* MobileCoreServices.framework */,
 				769856A31A59721F0084F079 /* Info.plist */,
 			);
 			name = "Supporting Files";
@@ -221,6 +228,7 @@
 				769856A51A59721F0084F079 /* AppDelegate.swift in Sources */,
 				769856CA1A597B710084F079 /* FeedCell.swift in Sources */,
 				769856C81A5976800084F079 /* FeedViewController.swift in Sources */,
+				769856CE1A598CD30084F079 /* FeedItem.swift in Sources */,
 				769856A81A59721F0084F079 /* ExchangeAGram.xcdatamodeld in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

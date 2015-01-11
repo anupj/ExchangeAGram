@@ -9,6 +9,7 @@
 import UIKit
 import MobileCoreServices
 import CoreData
+import MapKit
 
 /*
 * Step 1 - This class was created after deleting the original ViewController class.
@@ -21,7 +22,7 @@ import CoreData
 * Step 7.1 - Now we are confirming to more delegates so that we can assign FVC instance as a delegate
 * to UIImagePickerController
 */
-class FeedViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+class FeedViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, CLLocationManagerDelegate {
     
     // Step 2 - This is the first thing we did after setting up the story board
     // with a UICollectionView, and a NavigationController
@@ -32,8 +33,24 @@ class FeedViewController: UIViewController, UICollectionViewDataSource, UICollec
     // Step 12 -  manually construct an NSFetchRequest, which will "describe search criteria used to retrieve data from persistent store." By doing this, we will get a good look at the inner workings of the class. see 12.1 below
     var feedArray: [AnyObject] = [] // FeeItem array
     
+    // Location manager to be used with MapKit
+    var locationManager: CLLocationManager!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // set background image
+        let backgroundImage = UIImage(named: "AutumnBackground")
+        self.view.backgroundColor = UIColor(patternImage: backgroundImage!)
+        
+        // setup the location manager
+        locationManager = CLLocationManager()
+        locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.requestAlwaysAuthorization()
+        
+        locationManager.distanceFilter = 100.0
+        locationManager.startUpdatingLocation()
     }
     
     override func viewDidAppear(animated: Bool) {
@@ -70,6 +87,13 @@ class FeedViewController: UIViewController, UICollectionViewDataSource, UICollec
         feedItem.caption = "Test Caption"
         feedItem.thumbNail = thumbNailData
         
+        // add location information
+        feedItem.latitude = locationManager.location.coordinate.latitude
+        feedItem.longitude = locationManager.location.coordinate.longitude
+        
+        feedItem.uniqueID = NSUUID().UUIDString
+        feedItem.filtered = false
+        
         (UIApplication.sharedApplication().delegate as AppDelegate).saveContext()
         
         // added this in step 13.2
@@ -102,7 +126,16 @@ class FeedViewController: UIViewController, UICollectionViewDataSource, UICollec
         var cell:FeedCell = collectionView.dequeueReusableCellWithReuseIdentifier("Cell", forIndexPath: indexPath) as FeedCell
         let thisItem = feedArray[indexPath.row] as FeedItem
         
-        cell.imageView.image = UIImage(data: thisItem.image)
+        if thisItem.filtered == true {
+            let returnedImage = UIImage(data: thisItem.image)!
+            let image = UIImage(CGImage: returnedImage.CGImage, scale: 1.0, orientation: UIImageOrientation.Right)
+            cell.imageView.image = image
+        }
+        else {
+            cell.imageView.image = UIImage(data: thisItem.image)
+        }
+        
+        //cell.imageView.image = UIImage(data: thisItem.image)
         cell.captionLabel.text = thisItem.caption
         
         return cell
@@ -158,6 +191,10 @@ class FeedViewController: UIViewController, UICollectionViewDataSource, UICollec
         filterVC.feedItem = thisItem
         
         self.navigationController?.pushViewController(filterVC, animated: false)
+    }
+    
+    func locationManager(manager: CLLocationManager!, didUpdateLocations locations: [AnyObject]!) {
+        println("locations = \(locations)")
     }
     
     

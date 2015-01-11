@@ -141,6 +141,7 @@ class FilterViewController: UIViewController, UICollectionViewDataSource, UIColl
         let thumbNailData = UIImageJPEGRepresentation(filterImage, 0.1)
         self.feedItem.thumbNail = thumbNailData
         self.feedItem.caption = caption
+        self.feedItem.filtered = true
         (UIApplication.sharedApplication().delegate as AppDelegate).saveContext()
         self.navigationController?.popViewControllerAnimated(true)
     }
@@ -218,7 +219,7 @@ class FilterViewController: UIViewController, UICollectionViewDataSource, UIColl
     
     // this function is used to cache the image in a folder
     func cacheImage(imageNumber: Int) {
-        let fileName = "\(imageNumber)"
+        let fileName = "\(feedItem.uniqueID)\(imageNumber)"
         let uniquePath = tmp.stringByAppendingPathComponent(fileName)
         if !NSFileManager.defaultManager().fileExistsAtPath(uniquePath) {
             let data = self.feedItem.thumbNail
@@ -231,16 +232,18 @@ class FilterViewController: UIViewController, UICollectionViewDataSource, UIColl
     // this function is used to retrieve the image from the cache
     // if it is available OR add it to the cache otherwise
     func getCachedImage( imageNumber: Int) -> UIImage {
-        let fileName = "\(imageNumber)"
+        let fileName = "\(feedItem.uniqueID)\(imageNumber)"
         let uniquePath = tmp.stringByAppendingPathComponent(fileName)
         var image: UIImage
         
         if NSFileManager.defaultManager().fileExistsAtPath(uniquePath) {
-            image = UIImage(contentsOfFile: uniquePath)!
+            var returnedImage = UIImage(contentsOfFile: uniquePath)!
+            image = UIImage(CGImage: returnedImage.CGImage, scale: 1.0, orientation: UIImageOrientation.Right)!
         }
         else {
             self.cacheImage(imageNumber)
-            image = UIImage(contentsOfFile: uniquePath)!
+            var returnedImage = UIImage(contentsOfFile: uniquePath)!
+            image = UIImage(CGImage: returnedImage.CGImage, scale: 1.0, orientation: UIImageOrientation.Right)!
         }
         
         return image

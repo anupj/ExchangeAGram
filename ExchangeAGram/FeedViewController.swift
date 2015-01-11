@@ -34,14 +34,17 @@ class FeedViewController: UIViewController, UICollectionViewDataSource, UICollec
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+    }
+    
+    override func viewDidAppear(animated: Bool) {
         // Step 12.1 - get appdelegate, create nsfetchrequest and assign to feedarray
         let request = NSFetchRequest(entityName: "FeedItem")
         let appDelegate:AppDelegate = (UIApplication.sharedApplication().delegate as AppDelegate)
         let context:NSManagedObjectContext = appDelegate.managedObjectContext!
         feedArray = context.executeFetchRequest(request, error: nil)!
-
+        collectionView.reloadData()
     }
+    
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -57,12 +60,15 @@ class FeedViewController: UIViewController, UICollectionViewDataSource, UICollec
         // Step 11 - get jpeg representation, then create feed item instance
         // then save context
         let imageData = UIImageJPEGRepresentation(image, 1.0)
+        // This was done after updating the Core Data Model by adding the thumbNail field
+        let thumbNailData = UIImageJPEGRepresentation(image, 0.1)
         
         let managedObjectContext = (UIApplication.sharedApplication().delegate as AppDelegate).managedObjectContext
         let entityDescription = NSEntityDescription.entityForName("FeedItem", inManagedObjectContext: managedObjectContext!)
         let feedItem = FeedItem(entity: entityDescription!, insertIntoManagedObjectContext: managedObjectContext!)
         feedItem.image = imageData
         feedItem.caption = "Test Caption"
+        feedItem.thumbNail = thumbNailData
         
         (UIApplication.sharedApplication().delegate as AppDelegate).saveContext()
         
@@ -103,6 +109,9 @@ class FeedViewController: UIViewController, UICollectionViewDataSource, UICollec
     }
 
     
+    @IBAction func profileTapped(sender: UIBarButtonItem) {
+        self.performSegueWithIdentifier("profileSegue", sender: nil)
+    }
     
     // Step 6 - linked the camera button item to this action below
     // Step 6.1 - then go to the Proj settings and add MobileCoreServices.framework, then import it at the top of the class
@@ -137,6 +146,18 @@ class FeedViewController: UIViewController, UICollectionViewDataSource, UICollec
             alertController.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.Default, handler: nil))
             self.presentViewController(alertController, animated: true, completion: nil)
         }
+    }
+    
+    // step 14.1 (14 is in FilterViewController) 
+    // UICollectionViewDelegate
+    func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
+        let thisItem = feedArray[indexPath.row] as FeedItem
+        // step 14.2: Instead of using prepareForSegue, this is an alternate (and in this case) only
+        // way to pass our feedItem from FVC to FilterViewController
+        var filterVC = FilterViewController()
+        filterVC.feedItem = thisItem
+        
+        self.navigationController?.pushViewController(filterVC, animated: false)
     }
     
     

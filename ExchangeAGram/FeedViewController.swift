@@ -88,6 +88,7 @@ class FeedViewController: UIViewController, UICollectionViewDataSource, UICollec
         feedItem.thumbNail = thumbNailData
         
         // add location information
+
         feedItem.latitude = locationManager.location.coordinate.latitude
         feedItem.longitude = locationManager.location.coordinate.longitude
         
